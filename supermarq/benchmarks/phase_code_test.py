@@ -1,12 +1,20 @@
 import collections
 
 import pytest
+import qiskit
+
 from supermarq.benchmarks.phase_code import PhaseCode
 
 
 def test_phase_code_circuit() -> None:
     pc = PhaseCode(3, 1, [1, 1, 1])
     assert len(pc.circuit().all_qubits()) == 5
+
+    pc = PhaseCode(3, 1, [1, 1, 1], sdk="qiskit")
+    assert isinstance(pc.circuit(), qiskit.QuantumCircuit)
+
+    with pytest.raises(ValueError):
+        PhaseCode(3, 1, [1, 1, 1], sdk="")
 
 
 def test_phase_code_score() -> None:

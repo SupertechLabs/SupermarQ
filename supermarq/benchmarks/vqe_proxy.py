@@ -1,14 +1,16 @@
 import collections
 import copy
-from typing import Counter, List, Tuple
+from typing import Counter, List, Tuple, Union
 
 import cirq
 import numpy as np
+import qiskit
 import scipy.optimize as opt
-import supermarq
+
+import supermarq as sm
 
 
-class VQEProxy(supermarq.benchmark.Benchmark):
+class VQEProxy(sm.benchmark.Benchmark):
     """Proxy benchmark of a full VQE application that targets a single iteration
     of the whole variational optimization.
 
@@ -20,11 +22,16 @@ class VQEProxy(supermarq.benchmark.Benchmark):
     to the noiseless values.
     """
 
-    def __init__(self, num_qubits: int, num_layers: int = 1) -> None:
+    def __init__(self, num_qubits: int, num_layers: int = 1, sdk: str = "cirq") -> None:
         self.num_qubits = num_qubits
         self.num_layers = num_layers
         self.hamiltonian = self._gen_tfim_hamiltonian()
         self._params = self._gen_angles()
+
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
 
     def _gen_tfim_hamiltonian(self) -> List:
         r"""Generate an n-qubit Hamiltonian for a transverse-field Ising model (TFIM).
@@ -116,8 +123,8 @@ class VQEProxy(supermarq.benchmark.Benchmark):
     def _get_opt_angles(self) -> Tuple[List, float]:
         def f(params: List) -> float:
             z_circuit, x_circuit = self._gen_ansatz(params)
-            z_probs = supermarq.simulation.get_ideal_counts(z_circuit)
-            x_probs = supermarq.simulation.get_ideal_counts(x_circuit)
+            z_probs = sm.simulation.get_ideal_counts(z_circuit)
+            x_probs = sm.simulation.get_ideal_counts(x_circuit)
             energy = self._get_expectation_value_from_probs(z_probs, x_probs)
 
             return -energy  # because we are minimizing instead of maximizing
@@ -136,7 +143,7 @@ class VQEProxy(supermarq.benchmark.Benchmark):
         params, _ = self._get_opt_angles()
         return params
 
-    def circuit(self) -> List[cirq.Circuit]:
+    def circuit(self) -> Union[List[cirq.Circuit], List[qiskit.QuantumCircuit]]:
         """Construct a parameterized ansatz.
 
         Returns a list of circuits: the ansatz measured in the Z basis, and the
@@ -144,7 +151,12 @@ class VQEProxy(supermarq.benchmark.Benchmark):
         two circuits should be passed to `score` in the same order they are
         returned here.
         """
-        return self._gen_ansatz(self._params)
+        circuits = self._gen_ansatz(self._params)
+
+        if self.sdk == "qiskit":
+            return [sm.converters.cirq_to_qiskit(circuit) for circuit in circuits]
+
+        return circuits
 
     def score(self, counts: List[Counter]) -> float:
         """Compare the average energy measured by the experiments to the ideal
@@ -164,8 +176,8 @@ class VQEProxy(supermarq.benchmark.Benchmark):
 
         circuit_z, circuit_x = self.circuit()
         ideal_expectation = self._get_expectation_value_from_probs(
-            supermarq.simulation.get_ideal_counts(circuit_z),
-            supermarq.simulation.get_ideal_counts(circuit_x),
+            sm.simulation.get_ideal_counts(circuit_z),
+            sm.simulation.get_ideal_counts(circuit_x),
         )
 
         return float(

@@ -1,9 +1,12 @@
 import collections
-from typing import cast, Dict, List, Optional, Tuple
+from typing import cast, Dict, List, Optional, Tuple, Union
 
 import cirq
 import numpy as np
+import qiskit
 import sympy
+
+import supermarq as sm
 from supermarq import stabilizers
 from supermarq.benchmark import Benchmark
 
@@ -17,7 +20,7 @@ class MerminBell(Benchmark):
     the Mermin operator.
     """
 
-    def __init__(self, num_qubits: int) -> None:
+    def __init__(self, num_qubits: int, sdk: str = "cirq") -> None:
         self.num_qubits = num_qubits
         self.qubits = cirq.LineQubit.range(self.num_qubits)
 
@@ -26,7 +29,12 @@ class MerminBell(Benchmark):
             self.num_qubits, self.mermin_operator
         )
 
-    def circuit(self) -> cirq.Circuit:
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
+
+    def circuit(self) -> Union[cirq.Circuit, qiskit.QuantumCircuit]:
 
         circuit = cirq.Circuit()
 
@@ -39,11 +47,13 @@ class MerminBell(Benchmark):
         measurement_circuit = self._get_measurement_circuit()
         circuit.append(measurement_circuit.get_circuit())
 
+        if self.sdk == "qiskit":
+            return sm.converters.cirq_to_qiskit(circuit)
+
         return circuit
 
     def score(self, counts: collections.Counter) -> float:
-        """
-        Compute the score for the N-qubit Mermin-Bell benchmark.
+        """Compute the score for the N-qubit Mermin-Bell benchmark.
 
         This function assumes the regular big endian ordering of bitstring results
         """

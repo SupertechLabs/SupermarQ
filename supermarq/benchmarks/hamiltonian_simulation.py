@@ -1,8 +1,11 @@
 import collections
+from typing import Union
 
 import cirq
 import numpy as np
-import supermarq
+import qiskit
+
+import supermarq as sm
 from supermarq.benchmark import Benchmark
 
 
@@ -17,7 +20,9 @@ class HamiltonianSimulation(Benchmark):
     range of benchmark sizes.
     """
 
-    def __init__(self, num_qubits: int, time_step: int = 1, total_time: int = 1) -> None:
+    def __init__(
+        self, num_qubits: int, time_step: int = 1, total_time: int = 1, sdk: str = "cirq"
+    ) -> None:
         """Args:
         num_qubits: int
             Size of the TFIM chain, equivalent to the number of qubits.
@@ -30,7 +35,12 @@ class HamiltonianSimulation(Benchmark):
         self.time_step = time_step
         self.total_time = total_time
 
-    def circuit(self) -> cirq.Circuit:
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
+
+    def circuit(self) -> Union[cirq.Circuit, qiskit.QuantumCircuit]:
         """Generate a circuit to simulate the evolution of an n-qubit TFIM
         chain under the Hamiltonian:
 
@@ -75,6 +85,9 @@ class HamiltonianSimulation(Benchmark):
         # End the circuit with measurements of every qubit in the Z-basis
         circuit.append(cirq.measure(*qubits))
 
+        if self.sdk == "qiskit":
+            return sm.converters.cirq_to_qiskit(circuit)
+
         return circuit
 
     def _average_magnetization(self, result: dict, shots: int) -> float:
@@ -96,7 +109,7 @@ class HamiltonianSimulation(Benchmark):
                 represented the measured qubit state, and the values are the number
                 of times that state of observed.
         """
-        ideal_counts = supermarq.simulation.get_ideal_counts(self.circuit())
+        ideal_counts = sm.simulation.get_ideal_counts(self.circuit())
 
         total_shots = sum(counts.values())
 

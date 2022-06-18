@@ -1,7 +1,11 @@
 import collections
+from typing import Union
 
 import cirq
+import qiskit
 from qiskit.quantum_info import hellinger_fidelity
+
+import supermarq as sm
 from supermarq.benchmark import Benchmark
 
 
@@ -13,10 +17,15 @@ class GHZ(Benchmark):
     the experimental and ideal probability distributions.
     """
 
-    def __init__(self, num_qubits: int) -> None:
+    def __init__(self, num_qubits: int, sdk: str = "cirq") -> None:
         self.num_qubits = num_qubits
 
-    def circuit(self) -> cirq.Circuit:
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
+
+    def circuit(self) -> Union[cirq.Circuit, qiskit.QuantumCircuit]:
         """Generate an n-qubit GHZ circuit"""
         qubits = cirq.LineQubit.range(self.num_qubits)
         circuit = cirq.Circuit()
@@ -24,6 +33,10 @@ class GHZ(Benchmark):
         for i in range(self.num_qubits - 1):
             circuit.append(cirq.CNOT(qubits[i], qubits[i + 1]))
         circuit.append(cirq.measure(*qubits))
+
+        if self.sdk == "qiskit":
+            return sm.converters.cirq_to_qiskit(circuit)
+
         return circuit
 
     def score(self, counts: collections.Counter) -> float:

@@ -1,4 +1,7 @@
 import cirq
+import pytest
+import qiskit
+
 import supermarq
 from supermarq.benchmarks.qaoa_vanilla_proxy import QAOAVanillaProxy
 
@@ -12,6 +15,12 @@ def test_qaoa_circuit() -> None:
         )
         == 12
     )
+
+    qaoa = QAOAVanillaProxy(3, sdk="qiskit")
+    assert isinstance(qaoa.circuit(), qiskit.QuantumCircuit)
+
+    with pytest.raises(ValueError):
+        QAOAVanillaProxy(3, sdk="")
 
 
 def test_qaoa_score() -> None:

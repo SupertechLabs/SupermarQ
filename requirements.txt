@@ -1,2 +1,2 @@
-cirq>=0.13.0,<=0.14.0.dev20220105215702
-qiskit~=0.28.0
+cirq-superstaq~=0.1.25
+qiskit-superstaq~=0.1.21

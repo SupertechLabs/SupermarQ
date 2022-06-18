@@ -1,3 +1,6 @@
+import pytest
+import qiskit
+
 import supermarq
 from supermarq.benchmarks.mermin_bell import MerminBell
 
@@ -11,6 +14,12 @@ def test_mermin_bell_circuit() -> None:
 
     mb = MerminBell(5)
     assert len(mb.circuit().all_qubits()) == 5
+
+    mb = MerminBell(3, sdk="qiskit")
+    assert isinstance(mb.circuit(), qiskit.QuantumCircuit)
+
+    with pytest.raises(ValueError):
+        MerminBell(3, sdk="")
 
 
 def test_mermin_bell_score() -> None:

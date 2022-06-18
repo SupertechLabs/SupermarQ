@@ -1,8 +1,11 @@
 import collections
-from typing import Generator, List
+from typing import Generator, List, Union
 
 import cirq
+import qiskit
 from qiskit.quantum_info import hellinger_fidelity
+
+import supermarq as sm
 from supermarq.benchmark import Benchmark
 
 
@@ -21,12 +24,19 @@ class PhaseCode(Benchmark):
 
     """
 
-    def __init__(self, num_data_qubits: int, num_rounds: int, phase_state: List[int]) -> None:
+    def __init__(
+        self, num_data_qubits: int, num_rounds: int, phase_state: List[int], sdk: str = "cirq"
+    ) -> None:
         if len(phase_state) != num_data_qubits:
             raise ValueError("The length of `phase_state` must match the number of data qubits")
         self.num_data_qubits = num_data_qubits
         self.num_rounds = num_rounds
         self.phase_state = phase_state
+
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
 
     def _measurement_round_cirq(self, qubits: List[cirq.LineQubit], round_idx: int) -> Generator:
         """
@@ -46,7 +56,7 @@ class PhaseCode(Benchmark):
         yield cirq.measure(*ancilla_qubits, key=f"mcm{round_idx}")
         yield [cirq.ops.reset(qubit) for qubit in ancilla_qubits]
 
-    def circuit(self) -> cirq.Circuit:
+    def circuit(self) -> Union[cirq.Circuit, qiskit.QuantumCircuit]:
         num_qubits = 2 * self.num_data_qubits - 1
         qubits = cirq.LineQubit.range(num_qubits)
         circuit = cirq.Circuit()
@@ -65,6 +75,9 @@ class PhaseCode(Benchmark):
             circuit.append(cirq.H(qubits[2 * i]))
 
         circuit.append(cirq.measure(*qubits, key="meas_all"))
+
+        if self.sdk == "qiskit":
+            return sm.converters.cirq_to_qiskit(circuit)
 
         return circuit
 

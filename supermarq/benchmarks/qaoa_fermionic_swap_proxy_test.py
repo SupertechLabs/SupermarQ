@@ -1,6 +1,9 @@
 import collections
 
 import cirq
+import pytest
+import qiskit
+
 import supermarq
 from supermarq.benchmarks.qaoa_fermionic_swap_proxy import QAOAFermionicSwapProxy
 
@@ -15,6 +18,12 @@ def test_qaoa_circuit() -> None:
         )
         == 18
     )
+
+    qaoa = QAOAFermionicSwapProxy(3, sdk="qiskit")
+    assert isinstance(qaoa.circuit(), qiskit.QuantumCircuit)
+
+    with pytest.raises(ValueError):
+        QAOAFermionicSwapProxy(3, sdk="")
 
 
 def test_qaoa_score() -> None:

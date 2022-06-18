@@ -1,10 +1,12 @@
 import collections
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import cirq
 import numpy as np
+import qiskit
 import scipy
-import supermarq
+
+import supermarq as sm
 from supermarq.benchmark import Benchmark
 
 
@@ -28,7 +30,7 @@ class QAOAVanillaProxy(Benchmark):
         2. Finding approximately optimal angles (rather than random values)
     """
 
-    def __init__(self, num_qubits: int) -> None:
+    def __init__(self, num_qubits: int, sdk: str = "cirq") -> None:
         """Generate a new benchmark instance.
 
         Args:
@@ -37,6 +39,11 @@ class QAOAVanillaProxy(Benchmark):
         self.num_qubits = num_qubits
         self.hamiltonian = self._gen_sk_hamiltonian()
         self.params = self._gen_angles()
+
+        if sdk not in ["cirq", "qiskit"]:
+            raise ValueError("Valid sdks are: 'cirq', 'qiskit'")
+
+        self.sdk = sdk
 
     def _gen_sk_hamiltonian(self) -> List:
         """Randomly pick +1 or -1 for each edge weight."""
@@ -95,7 +102,7 @@ class QAOAVanillaProxy(Benchmark):
         def f(params: List) -> float:
             gamma, beta = params
             circ = self._gen_ansatz(gamma, beta)
-            probs = supermarq.simulation.get_ideal_counts(circ)
+            probs = sm.simulation.get_ideal_counts(circ)
             objective_value = self._get_expectation_value_from_probs(probs)
 
             return -objective_value  # because we are minimizing instead of maximizing
@@ -116,7 +123,7 @@ class QAOAVanillaProxy(Benchmark):
                 best_cost = cost
         return best_params
 
-    def circuit(self) -> cirq.Circuit:
+    def circuit(self) -> Union[cirq.Circuit, qiskit.QuantumCircuit]:
         """Generate a QAOA circuit for the Sherrington-Kirkpatrick model.
 
         The ansatz structure is given by the form of the Hamiltonian and requires
@@ -124,7 +131,12 @@ class QAOAVanillaProxy(Benchmark):
         benchmark to p=1 to keep the classical simulation scalable.
         """
         gamma, beta = self.params
-        return self._gen_ansatz(gamma, beta)
+        circuit = self._gen_ansatz(gamma, beta)
+
+        if self.sdk == "qiskit":
+            return sm.converters.cirq_to_qiskit(circuit)
+
+        return circuit
 
     def score(self, counts: collections.Counter) -> float:
         """Compare the experimental output to the output of noiseless simulation.
@@ -133,7 +145,7 @@ class QAOAVanillaProxy(Benchmark):
         However, it could in principle be done efficiently via
         https://arxiv.org/abs/1706.02998, so we're good.
         """
-        ideal_counts = supermarq.simulation.get_ideal_counts(self.circuit())
+        ideal_counts = sm.simulation.get_ideal_counts(self.circuit())
         total_shots = sum(counts.values())
         experimental_counts = collections.Counter({k: v / total_shots for k, v in counts.items()})
 

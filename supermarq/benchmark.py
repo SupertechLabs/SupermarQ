@@ -2,6 +2,7 @@ import abc
 from typing import Any, Sequence, Union
 
 import cirq
+import qiskit
 
 
 class Benchmark:
@@ -17,7 +18,11 @@ class Benchmark:
     """
 
     @abc.abstractmethod
-    def circuit(self) -> Union[cirq.Circuit, Sequence[cirq.Circuit]]:
+    def circuit(
+        self,
+    ) -> Union[
+        cirq.Circuit, Sequence[cirq.Circuit], qiskit.QuantumCircuit, Sequence[qiskit.QuantumCircuit]
+    ]:
         """Returns the quantum circuit corresponding to the current benchmark parameters."""
 
     @abc.abstractmethod

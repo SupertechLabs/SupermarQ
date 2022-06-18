@@ -3,6 +3,7 @@ import collections
 import cirq
 import pytest
 from qiskit.quantum_info import hellinger_fidelity
+
 from supermarq.benchmark import Benchmark
 
 
