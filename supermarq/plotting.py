@@ -12,7 +12,25 @@ from sklearn.linear_model import LinearRegression
 def plot_results(
     scores: List[float], tick_labels: List[str], savefn: Optional[str] = None, show: bool = True
 ) -> None:
-    """Plot a simple bar chart of the benchmark results."""
+    """Plot a simple bar chart of the benchmark results.
+
+    The bars are the scores obtained for each of the benchmarks in this chat.
+
+    Args:
+      scores:
+        A list of floats for the scores obtained.
+      tick_labels:
+        A list of strings for labelling the scores on the plot.
+      savefn:
+        A string of the name of the file for saving the plot created.
+        Leave blank to not create a file. (Optional)
+      show:
+        A boolean for whether to display the file created.
+        Default is True. (Optional)
+
+    Returns:
+      None
+    """
     _, ax = plt.subplots(dpi=150)
 
     width = 0.4
@@ -44,6 +62,29 @@ def plot_correlations(
     savefn: Optional[str] = None,
     show: bool = True,
 ) -> None:
+    """Plots the correlations of benchmark features to scores.
+
+    The plot is an annotated heatmap.
+
+    Args:
+      benchmark_features:
+        A dictionary of benchmark names to a list for the feature values.
+      device_scores:
+        A dictionary with keys for the benchmark names to the scores they received.
+      feature_labels:
+        A list of the different names of the features.
+      device_name:
+        A string for the name of the device being plotted.
+      savefn:
+        A string of the name of the file for saving the plot created.
+        Leave blank to not create a file. (Optional)
+      show:
+        A boolean for whether to display the file created.
+        Default is True. (Optional)
+
+    Returns:
+      None
+    """
 
     temp_correlations = []
     for i in range(len(feature_labels)):
@@ -92,13 +133,30 @@ def plot_benchmark(
     spoke_labels: Optional[List[str]] = None,
     legend_loc: Tuple[float, float] = (0.75, 0.85),
 ) -> None:
-    """
-    Create a radar plot of the given benchmarks.
+    """Create a radar plot of the given benchmarks.
 
-    Input
-    -----
-    data : Contains the title, feature data, and labels in the format:
+    The radar plot shows progress for different features towards the benchmarks.
+
+    Args:
+      data:
+        Contains the title, feature data, and labels in the format:
         [title, [benchmark labels], [[features_1], [features_2], ...]]
+      show:
+        A boolean for whether to display the file created.
+        Default is True. (Optional)
+      savefn:
+        A string of the name of the file for saving the plot created.
+        Leave blank to not create a file. (Optional)
+      spoke_labels:
+        A list of strings for the labels of the spokes of the graph.
+        Leave blank for the defaults: Connectivity, Liveness,
+        Parallelism, Measurement, and Entanglement. (Optional)
+      legend_loc:
+        A tuple of two floats for the x and y coordinates for
+        where to put the legend. (Optional)
+
+    Returns:
+      None
     """
     plt.rcParams["font.family"] = "Times New Roman"
 
@@ -148,26 +206,29 @@ def heatmap(
     cbarlabel: str = "",
     **kwargs: Any
 ) -> Tuple[Any, Any]:
-    """
-    Create a heatmap from a numpy array and two lists of labels.
+    """Create a heatmap from a numpy array and two lists of labels.
 
-    Parameters
-    ----------
-    data
+    The main heatmap is returned, as well as the color bar.
+
+    Args:
+      data:
         A 2D numpy array of shape (N, M).
-    row_labels
+      row_labels:
         A list or array of length N with the labels for the rows.
-    col_labels
+      col_labels:
         A list or array of length M with the labels for the columns.
-    ax
+      ax:
         A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  If
-        not provided, use current axes or create a new one.  Optional.
-    cbar_kw
-        A dictionary with arguments to `matplotlib.Figure.colorbar`.  Optional.
-    cbarlabel
-        The label for the colorbar.  Optional.
-    **kwargs
+        not provided, use current axes or create a new one. (Optional)
+      cbar_kw:
+        A dictionary with arguments to `matplotlib.Figure.colorbar`. (Optional)
+      cbarlabel:
+        The label for the colorbar. (Optional)
+      **kwargs:
         All other arguments are forwarded to `imshow`.
+
+    Returns:
+      A tuple with the heatmap image and the bar legend.
     """
     # Plot the heatmap
     im = ax.imshow(data, **kwargs)
@@ -216,29 +277,32 @@ def annotate_heatmap(
     threshold: Optional[float] = None,
     **textkw: Any
 ) -> List:
-    """
-    A function to annotate a heatmap.
+    """A function to annotate a heatmap.
 
-    Parameters
-    ----------
-    im
+    The annotations involve marking the values above and below a certain treshold.
+
+    Args:
+      im:
         The AxesImage to be labeled.
-    data
-        Data used to annotate.  If None, the image's data is used.  Optional.
-    valfmt
+      data:
+        Data used to annotate.  If None, the image's data is used. (Optional)
+      valfmt:
         The format of the annotations inside the heatmap.  This should either
         use the string format method, e.g. "$ {x:.2f}", or be a
-        `matplotlib.ticker.Formatter`.  Optional.
-    textcolors
+        `matplotlib.ticker.Formatter`. (Optional)
+      textcolors:
         A pair of colors.  The first is used for values below a threshold,
-        the second for those above.  Optional.
-    threshold
+        the second for those above. (Optional)
+      threshold:
         Value in data units according to which the colors from textcolors are
         applied.  If None (the default) uses the middle of the colormap as
-        separation.  Optional.
-    **kwargs
+        separation. (Optional)
+      **kwargs:
         All other arguments are forwarded to each call to `text` used to create
         the text labels.
+
+    Returns:
+      A list of the annotated pixels.
     """
 
     if not isinstance(data, (list, np.ndarray)):
@@ -272,17 +336,17 @@ def annotate_heatmap(
 
 
 def radar_factory(num_vars: int) -> np.ndarray:
-    """
+    """Create a radar chart with `num_vars` axes.
+
     (https://matplotlib.org/stable/gallery/specialty_plots/radar_chart.html)
-
-    Create a radar chart with `num_vars` axes.
-
     This function creates a RadarAxes projection and registers it.
 
-    Parameters
-    ----------
-    num_vars : int
-        Number of variables for radar chart.
+    Args:
+      num_vars:
+        An int of the number of variables for radar chart.
+
+    Return:
+      A numpy array representing a radar chart with the number of axes specified.
     """
     # calculate evenly-spaced axis angles
     theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)

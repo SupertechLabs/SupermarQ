@@ -19,13 +19,18 @@ class HamiltonianSimulation(Benchmark):
     """
 
     def __init__(self, num_qubits: int, time_step: int = 1, total_time: int = 1) -> None:
-        """Args:
-        num_qubits: int
-            Size of the TFIM chain, equivalent to the number of qubits.
-        time_step: int
-            Size of the timestep in attoseconds.
-        total_time:
-            Total simulation time of the TFIM chain in attoseconds.
+        """The constructor for the Hamiltonian Simulation.
+
+        Args:
+          num_qubits:
+            An int representing the size of the TFIM chain, equivalent to the number of qubits.
+          time_step:
+            The size of the timestep in attoseconds.
+          total_time:
+            The total simulation time of the TFIM chain in attoseconds.
+
+        Returns:
+          An object representing the values for the simulation.
         """
         self.num_qubits = num_qubits
         self.time_step = time_step
@@ -33,14 +38,20 @@ class HamiltonianSimulation(Benchmark):
 
     def circuit(self) -> cirq.Circuit:
         """Generate a circuit to simulate the evolution of an n-qubit TFIM
-        chain under the Hamiltonian:
+        chain under the Hamiltonian.
 
         H(t) = - Jz * sum_{i=1}^{n-1}(sigma_{z}^{i} * sigma_{z}^{i+1})
                - e_ph * cos(w_ph * t) * sum_{i=1}^{n}(sigma_{x}^{i})
 
         where,
-            w_ph: frequency of E" phonon in MoSe2.
-            e_ph: strength of electron-phonon coupling.
+            w_ph = frequency of E" phonon in MoSe2.
+            e_ph = strength of electron-phonon coupling.
+
+        Args:
+          None.
+
+        Returns:
+          The circuit for simulation.
         """
         hbar = 0.658212  # eV*fs
         jz = (
@@ -89,13 +100,21 @@ class HamiltonianSimulation(Benchmark):
         return average_mag
 
     def score(self, counts: collections.Counter) -> float:
-        """Compute the average magnetization of the TFIM chain along the Z-axis
+        """Computes the score from the Hamiltonian Simulation.
+
+        The score here is the average magnetization of the TFIM chain along the Z-axis
         for the experimental results and via noiseless simulation.
 
+
+
         Args:
-            counts: Dictionary of the experimental results. The keys are bitstrings
-                represented the measured qubit state, and the values are the number
-                of times that state of observed.
+          counts:
+            Dictionary of the experimental results. The keys are bitstrings
+            represented the measured qubit state, and the values are the number
+            of times that state of observed.
+
+        Returns:
+          The score of the simulation (this case the average magnetization).
         """
         ideal_counts = supermarq.simulation.get_ideal_counts(self.circuit())
 

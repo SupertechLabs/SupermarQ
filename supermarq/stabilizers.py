@@ -39,6 +39,15 @@ def construct_stabilizer(N: int, clique: List) -> Tuple[np.ndarray, List]:
     basis for these terms. We'll do this by constructing the Z+X stabilizer matrix
     using all of the terms then select an independent basis using binary Gaussian
     elimination.
+
+    Args:
+      N:
+        The length of thr clique list.
+      clique:
+        A list for the clique to turn into a matrix.
+
+    Returns:
+      A tuple containing the matrix and pauli basis list for the matrix.
     """
     # Construct the stabilizer matrix as rows
     stabilizer_rows = []
@@ -79,7 +88,15 @@ def construct_stabilizer(N: int, clique: List) -> Tuple[np.ndarray, List]:
 def binary_gaussian_elimination(M: np.ndarray) -> np.ndarray:
     """Use binary Gaussian elimination to put the input matrix in row Echelon form.
 
-    The input matrix should be an NxM binary matrix."""
+    The input matrix should be an NxM binary matrix.
+
+    Args:
+      M:
+        The input matrix.
+
+    Returns:
+      A matrix in row Echelon form.
+    """
     num_rows, num_cols = M.shape
     for i in range(num_cols):
         if i >= num_rows:
@@ -164,7 +181,7 @@ def patch_Z_matrix(measurement_circuit: MeasurementCircuit) -> None:
 
 
 def change_X_to_Z_basis(measurement_circuit: MeasurementCircuit) -> None:
-    # change each qubit from X basis to Z basis via H
+    """Change each qubit from X basis to Z basis via H"""
     N = measurement_circuit.num_qubits
     for j in range(N):
         apply_H(measurement_circuit, j)

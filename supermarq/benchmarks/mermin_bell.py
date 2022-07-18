@@ -19,6 +19,16 @@ class MerminBell(Benchmark):
     """
 
     def __init__(self, num_qubits: int) -> None:
+        """The constructor for the Mermin-Bell benchmark test.
+
+        Args:
+          num_qubits:
+            An int representing the size of the TFIM chain, equivalent to the number of qubits.
+
+        Returns:
+          An object representing the values for the simulation.
+        """
+
         self.num_qubits = num_qubits
         self.qubits = cirq.LineQubit.range(self.num_qubits)
 
@@ -28,7 +38,16 @@ class MerminBell(Benchmark):
         )
 
     def circuit(self) -> cirq.Circuit:
+        """Generate an n-qubit GHZ circuit.
 
+        Based off the values given to the object constructor.
+
+        Args:
+          None.
+
+        Returns:
+          The circuit with n-qubits.
+        """
         circuit = cirq.Circuit()
 
         # Create a GHZ state
@@ -43,10 +62,18 @@ class MerminBell(Benchmark):
         return circuit
 
     def score(self, counts: collections.Counter) -> float:
-        """
-        Compute the score for the N-qubit Mermin-Bell benchmark.
+        """Compute the score for the N-qubit Mermin-Bell benchmark.
 
         This function assumes the regular big endian ordering of bitstring results
+
+        Args:
+          counts:
+            Dictionary of the experimental results. The keys are bitstrings
+            represented the measured qubit state, and the values are the number
+            of times that state of observed.
+
+        Returns:
+          The score of the simulation (this case the Mermin-Bell benchmark).
         """
 
         # Store the conjugation rules for H, S, CX, CZ, SWAP in dictionaries. The keys are

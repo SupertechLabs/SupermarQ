@@ -12,11 +12,14 @@ def cirq_to_qiskit(circuit: cirq.Circuit) -> qiskit.circuit.QuantumCircuit:
 def compute_communication_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the program communication of the given quantum circuit.
 
-    Program communication = circuit's average qubit degree / degree of a complete graph.
+    The program communication is the circuit's average qubit degree / degree of a complete graph.
 
-    Input
-    -----
-    circ : A cirq or qiskit quantum circuit
+    Args:
+      circ:
+        A cirq or qiskit quantum circuit.
+
+    Returns:
+      A float representing program communication of the given quantum circuit.
     """
     num_qubits = circuit.num_qubits
     dag = qiskit.converters.circuit_to_dag(circuit)
@@ -35,11 +38,14 @@ def compute_communication_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) ->
 def compute_liveness_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the liveness of the given quantum circuit.
 
-    Liveness feature = sum of all entries in the liveness matrix / (num_qubits * depth).
+    The liveness feature is the sum of all entries in the liveness matrix / (num_qubits * depth).
 
-    Input
-    -----
-    circuit : A cirq or qiskit quantum circuit
+    Args:
+      circuit:
+        A cirq or qiskit quantum circuit.
+
+    Returns:
+      A float representing the liveness of the given quantum circuit.
     """
 
     num_qubits = circuit.num_qubits
@@ -59,11 +65,12 @@ def compute_liveness_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> floa
 def compute_parallelism_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the parallelism of the given quantum circuit.
 
-    Parallelism feature = max(1 - depth / # of gates, 0)
+    Args:
+      circuit:
+        A cirq or qiskit quantum circuit.
 
-    Input
-    -----
-    circuit : A cirq or qiskit quantum circuit
+    Returns:
+      A float representing the parallelism of the given quantum circuit.
     """
     dag = qiskit.converters.circuit_to_dag(circuit)
     dag.remove_all_ops_named("barrier")
@@ -73,11 +80,14 @@ def compute_parallelism_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> f
 def compute_measurement_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the measurement feature of the given quantum circuit.
 
-    Measurement feature = # of layers of mid-circuit measurement / circuit depth.
+    The measurement feature is the # of layers of mid-circuit measurement / circuit depth.
 
-    Input
-    -----
-    circuit : A cirq or qiskit quantum circuit
+    Args:
+      circuit:
+        A cirq or qiskit quantum circuit.
+
+    Returns:
+      A foat representing the measurement feature of the given quantum circuit.
     """
     circuit.remove_final_measurements()
     dag = qiskit.converters.circuit_to_dag(circuit)
@@ -100,11 +110,15 @@ def compute_measurement_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> f
 def compute_entanglement_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the entanglement-ratio of the given quantum circuit.
 
-    Entanglement-ratio = ratio between # of 2-qubit gates and total number of gates in the circuit.
+    The entanglement-ratio is the ratio between # of 2-qubit gates and
+    total number of gates in the circuit.
 
-    Input
-    -----
-    circuit : A cirq or qiskit quantum circuit
+    Args:
+      circuit:
+        A cirq or qiskit quantum circuit.
+
+    Returns:
+      A float representing the entanglement-ratio of the given quantum circuit.
     """
     dag = qiskit.converters.circuit_to_dag(circuit)
     dag.remove_all_ops_named("barrier")
@@ -115,11 +129,14 @@ def compute_entanglement_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> 
 def compute_depth_with_qiskit(circuit: qiskit.circuit.QuantumCircuit) -> float:
     """Compute the critical depth of the given quantum circuit.
 
-    Critical depth = # of 2-qubit gates along the critical path / total # of 2-qubit gates.
+    The critical depth is the # of 2-qubit gates along the critical path / total # of 2-qubit gates.
 
-    Input
-    -----
-    circuit : A cirq or qiskit quantum circuit
+    Args:
+      circuit:
+        A cirq or qiskit quantum circuit.
+
+    Returns:
+      A float representing the critical depth of the given quantum circuit.
     """
     dag = qiskit.converters.circuit_to_dag(circuit)
     dag.remove_all_ops_named("barrier")
